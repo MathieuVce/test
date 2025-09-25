@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { IPrice } from '@/@types/IMarketContext';
 import { MarketContext } from '@/contexts/MarketContext';
+import { moderateScale, scaleSize } from '@/utils/global';
+import { COLORS, FONTS, SIZES } from '@/utils/theme';
 
 type ItemCardProps = {
     id: number;
@@ -20,7 +22,7 @@ type ItemCardProps = {
     onPress: () => void;
 };
 
-const ItemCard = ({ id, title, price, stock, selected, onPress }: ItemCardProps) => {
+const ItemCard: React.FC<ItemCardProps> = ({ id, title, price, stock, selected, onPress }) => {
     const [loading, setLoading] = useState<boolean>(true);
     const [quantity, setQuantity] = useState<number>(0);
 
@@ -58,7 +60,7 @@ const ItemCard = ({ id, title, price, stock, selected, onPress }: ItemCardProps)
 
     return (
         <TouchableOpacity
-            style={selected ? {...styles.cardSelected, borderColor: stock - quantity === 0 ? 'red' : '#3d38f5' } : styles.card}
+            style={selected ? {...styles.cardSelected, borderColor: stock - quantity === 0 ? COLORS.red : COLORS.primary } : styles.card}
             activeOpacity={0.9}
             onPress={handleSelect}
             disabled={isDisabled}
@@ -73,7 +75,7 @@ const ItemCard = ({ id, title, price, stock, selected, onPress }: ItemCardProps)
                 {/* Loader while image loads */}
                 {loading && (
                     <View style={styles.loaderContainer}>
-                        <ActivityIndicator size='large' color='#fff' />
+                        <ActivityIndicator size='large' color={COLORS.white} />
                     </View>
                 )}
 
@@ -132,33 +134,33 @@ const styles = StyleSheet.create({
         width: Dimensions.get('window').width / 2 - 12,
         aspectRatio: 1,
         marginBottom: 8,
-        borderRadius: 8,
+        borderRadius: SIZES.radius,
         overflow: 'hidden',
-        backgroundColor: '#fff',
+        backgroundColor: COLORS.white,
     },
     cardSelected: {
         width: Dimensions.get('window').width / 2 - 12,
         aspectRatio: 1,
         marginBottom: 8,
-        borderRadius: 8,
+        borderRadius: SIZES.radius,
         overflow: 'hidden',
-        backgroundColor: '#fff',
+        backgroundColor: COLORS.white,
         borderWidth: 2,
-        borderColor: '#3d38f5',
+        borderColor: COLORS.primary,
     },
     image: {
         flex: 1,
         justifyContent: 'flex-end',
     },
     imageStyle: {
-        borderRadius: 8,
+        borderRadius: SIZES.radius,
     },
     loaderContainer: {
         ...StyleSheet.absoluteFillObject,
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: -24,
-        backgroundColor: 'rgba(0,0,0,0.2)',
+        backgroundColor: COLORS.darkLightOpacity,
     },
     infoBox: {
         flexDirection: 'row',
@@ -176,62 +178,61 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end',
     },
     title: {
-        color: 'black',
-        fontSize: 16,
+        color: COLORS.black,
+        fontSize: scaleSize(16),
         fontWeight: '900',
     },
     stock: {
-        color: 'grey',
-        fontSize: 12,
+        color: COLORS.grey,
+        fontSize: scaleSize(12),
         marginTop: 2,
     },
     price: {
-        backgroundColor: 'black',
-        paddingHorizontal: 10,
+        backgroundColor: COLORS.black,
+        paddingHorizontal: moderateScale(10),
         paddingVertical: 4,
-        borderRadius: 20,
-        color: 'white',
-        fontSize: 20,
-        fontWeight: 'bold',
+        borderRadius: SIZES.radius * 2,
+        color: COLORS.white,
+        ...FONTS.regularBold,
     },
     badge: {
         position: 'absolute',
         top: 4,
         right: 4,
-        backgroundColor: '#3d38f5',
-        borderRadius: 20,
+        backgroundColor: COLORS.primary,
+        borderRadius: SIZES.radius * 2,
         width: 30,
         height: 30,
         justifyContent: 'center',
         alignItems: 'center',
     },
     badgeText: {
-        color: 'white',
-        fontWeight: 'bold',
-        fontSize: 12,
+        color: COLORS.white,
+        ...FONTS.regularBold,
     },
     counterBox: {
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.4)',
-        paddingVertical: 6,
-        borderRadius: 20,
-        marginHorizontal: 20,
+        backgroundColor: COLORS.darkOpacity,
+        paddingVertical: scaleSize(4),
+        borderRadius: SIZES.radius * 2,
+        marginHorizontal: scaleSize(26),
         marginVertical: 4,
     },
     counterButton: {
         paddingHorizontal: 24,
-        borderRadius: 20,
+        marginHorizontal: -8,
+        borderRadius: SIZES.radius * 2,
     },
     counterText: {
-        color: 'white',
-        fontSize: 22,
+        color: COLORS.white,
+        fontSize: scaleSize(22),
         fontWeight: 'bold',
     },
     counterValue: {
-        color: 'white',
-        fontSize: 18,
+        color: COLORS.white,
+        fontSize: scaleSize(18),
         fontWeight: 'bold',
         marginHorizontal: 8,
     },
@@ -244,11 +245,11 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.6)',
+        backgroundColor: COLORS.darkOpacity,
     },
     disabledText: {
-        color: 'white',
+        color: COLORS.white,
         fontWeight: 'bold',
-        fontSize: 38,
+        fontSize: scaleSize(34),
     },
 });

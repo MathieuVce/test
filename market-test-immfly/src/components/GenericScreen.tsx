@@ -6,6 +6,8 @@ import {
     TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { scaleSize } from '@/utils/global';
+import { COLORS, SIZES } from '@/utils/theme';
 
 type GenericScreenProps = {
     title: string;
@@ -13,11 +15,11 @@ type GenericScreenProps = {
     children: React.ReactNode;
 };
 
-const GenericScreen = ({
+const GenericScreen: React.FC<GenericScreenProps> = ({
     title,
     showArrow = false,
     children,
-}:  GenericScreenProps) => {
+}) => {
     return (
         <View style={styles.overlay}>
             <View style={styles.container}>
@@ -26,11 +28,11 @@ const GenericScreen = ({
                     <View style={styles.actions}>
                         {showArrow && (
                             <TouchableOpacity onPress={() => {}}>
-                                <Ionicons name='chevron-down' size={32} color='lightgrey' />
+                                <Ionicons name='chevron-down' size={scaleSize(32)} color={COLORS.lightGrey} />
                             </TouchableOpacity>
                         )}
                         <View style={styles.closeButton}>
-                            <Ionicons name='close' size={26} color='#65638e' />
+                            <Ionicons name='close' size={scaleSize(26)} color={COLORS.purple} />
                         </View>
                     </View>
                 </View>
@@ -48,12 +50,12 @@ const styles = StyleSheet.create({
     overlay: {
         flex: 1,
         justifyContent: 'flex-end',
-        backgroundColor: '#9eb8c0',
+        backgroundColor: COLORS.lightSteelBlue,
     },
     container: {
-        backgroundColor: 'white',
-        borderTopLeftRadius: 12,
-        borderTopRightRadius: 12,
+        backgroundColor: COLORS.white,
+        borderTopLeftRadius: SIZES.radius,
+        borderTopRightRadius: SIZES.radius,
         paddingTop: 12,
         minHeight: '93%',
     },
@@ -66,7 +68,7 @@ const styles = StyleSheet.create({
         marginBottom: 6,
     },
     title: {
-        fontSize: 32,
+        fontSize: scaleSize(32),
         fontWeight: 'bold',
     },
     actions: {
@@ -74,14 +76,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     closeButton: {
-        backgroundColor: '#f0f0f0',
+        backgroundColor: COLORS.extraLightGrey,
         borderRadius: 24,
         padding: 10,
-        marginLeft: 24,
+        marginLeft: scaleSize(24),
     },
     body: {
         flex: 1,
-        backgroundColor: '#dedede',
+        backgroundColor: COLORS.greyLight,
         paddingTop: 6,
     },
 });

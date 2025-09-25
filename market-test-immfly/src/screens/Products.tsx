@@ -8,6 +8,8 @@ import { OptionValue, OPTIONS, IPrice } from '@/@types/IMarketContext';
 import { ScrollView, StyleSheet, TouchableOpacity, View, Text } from 'react-native';
 import { MarketContext } from '@/contexts/MarketContext';
 import { ROUTES } from '@/@types/staticKeys';
+import { scaleSize } from '@/utils/global';
+import { COLORS, FONTS, SIZES } from '@/utils/theme';
 
 type TProductsProps = AppModelNavProps<'Products'>;
 
@@ -20,11 +22,15 @@ export const Products: React.FC<TProductsProps> = ({ navigation }) => {
     const [open, setOpen] = useState<boolean>(false);
     const [value, setValue] = useState<OptionValue['label']>(OPTIONS.RETAIL.label);
 
-    const [saleType, setSaleType] = useState<{ label: OptionValue['label']; value: OptionValue['label'] }[]>(
-        Object.values(OPTIONS).map((opt) => ({
-            label: opt.label,
-            value: opt.label,
-        }))
+    const [saleType, setSaleType] = useState(
+        Object.values(OPTIONS).map((opt) => {
+            // Truncate label if too long
+            const label = opt.label.length > 14 ? opt.label.slice(0, 14) + "…" : opt.label;
+            return {
+                label,
+                value: opt.label,
+            };
+        })
     );
 
     // Get sale ratio based on selected option
@@ -108,7 +114,7 @@ export const Products: React.FC<TProductsProps> = ({ navigation }) => {
                     <View style={styles.footerButton}>
                         <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate(ROUTES.SCREEN_CART)}>
                             <Text style={styles.payText}>
-                                PAGAR <Text style={styles.price}>{price[currency].toFixed(2)}</Text> {currency}
+                                PAGAR <Text style={FONTS.regularBold}>{price[currency].toFixed(2)}</Text> {currency}
                             </Text>
                         </TouchableOpacity>
 
@@ -122,25 +128,25 @@ export const Products: React.FC<TProductsProps> = ({ navigation }) => {
                                 setValue={setValue}
                                 setItems={setSaleType}
                                 style={styles.dropdownContainer}
-                                textStyle={styles.dropdownText}
+                                textStyle={FONTS.regular}
                                 labelStyle={styles.dropdownLabel}
                                 listItemContainerStyle={styles.listItemContainer}
-                                listItemLabelStyle={styles.listItemLabel}
-                                ArrowDownIconComponent={() => <Ionicons name='chevron-down' size={18} color='white' />}
-                                ArrowUpIconComponent={() => <Ionicons name='chevron-up' size={18} color='white' />}
+                                listItemLabelStyle={FONTS.regular}
+                                ArrowDownIconComponent={() => <Ionicons name='chevron-down' size={18} color={COLORS.white} />}
+                                ArrowUpIconComponent={() => <Ionicons name='chevron-up' size={18} color={COLORS.white} />}
                             />
                         </View>
                     </View>
 
                     <View style={styles.currencyInfo}>
-                        <TouchableOpacity style={styles.currencyButton} onPress={() => changeCurrency('first')}>
-                            <Text style={styles.currencyText}>{getCurrencyValue('first')}</Text>
+                        <TouchableOpacity style={styles.currencyButtonLeft} onPress={() => changeCurrency('first')}>
+                            <Text style={FONTS.regular}>{getCurrencyValue('first')}</Text>
                         </TouchableOpacity>
 
                         <Text style={styles.currencyDivider}>|</Text>
 
-                        <TouchableOpacity style={styles.currencyButton} onPress={() => changeCurrency('second')}>
-                            <Text style={styles.currencyText}>{getCurrencyValue('second')}</Text>
+                        <TouchableOpacity style={styles.currencyButtonRight} onPress={() => changeCurrency('second')}>
+                            <Text style={FONTS.regular}>{getCurrencyValue('second')}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -164,7 +170,7 @@ const styles = StyleSheet.create({
     footer: {
         paddingTop: 24,
         alignItems: 'center',
-        backgroundColor: 'white',
+        backgroundColor: COLORS.white,
         minHeight: 138,
         marginBottom: 20,
     },
@@ -176,69 +182,61 @@ const styles = StyleSheet.create({
     },
     addButton: {
         flexBasis: '60%',
-        backgroundColor: '#3d38f5',
-        borderRadius: 10,
+        backgroundColor: COLORS.primary,
+        borderRadius: SIZES.radius,
         paddingVertical: 20,
-        paddingHorizontal: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
         borderTopRightRadius: 0,
         borderBottomRightRadius: 0,
         maxHeight: 57,
     },
     payText: {
-        color: 'white',
-        fontSize: 16,
-    },
-    price: {
-        fontWeight: 'bold',
+        color: COLORS.white,
+        fontSize: scaleSize(14),
     },
     dropdownContainerWrapper: {
         flexBasis: '35%',
-        backgroundColor: '#1e1c7a',
+        backgroundColor: COLORS.secondary,
         borderTopLeftRadius: 0,
         borderBottomLeftRadius: 0,
-        borderRadius: 10,
+        borderRadius: SIZES.radius,
     },
     dropdownContainer: {
         borderTopLeftRadius: 0,
         borderBottomLeftRadius: 0,
         minHeight: 57,
         borderWidth: 0,
-        backgroundColor: '#1e1c7a',
-    },
-    dropdownText: {
-        fontSize: 16,
-        color: 'black',
+        backgroundColor: COLORS.secondary,
     },
     dropdownLabel: {
-        fontSize: 14,
-        color: 'white',
+        fontSize: scaleSize(14),
+        color: COLORS.white,
     },
     listItemContainer: {
         borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
+        borderBottomColor: COLORS.greyLight,
         paddingVertical: 6,
         paddingHorizontal: 12,
-    },
-    listItemLabel: {
-        fontSize: 14,
-        color: 'black',
     },
     currencyInfo: {
         marginTop: 8,
         flexDirection: 'row',
         justifyContent: 'center',
-        width: '40%',
+        width: '60%',
     },
-    currencyButton: {
+    currencyButtonLeft: {
         padding: 6,
-        width: '50%',
-        alignItems: 'center',
+        width: '80%',
+        alignItems: 'flex-end',
+    },
+    currencyButtonRight: {
+        padding: 6,
+        width: '80%',
+        alignItems: 'flex-start',
     },
     currencyDivider: {
-        fontSize: 22,
-    },
-    currencyText: {
-        fontSize: 14,
-        color: 'black',
+        fontSize: scaleSize(22),
+        fontWeight: '200',
     },
 });
