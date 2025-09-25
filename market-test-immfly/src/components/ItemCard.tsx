@@ -58,7 +58,7 @@ const ItemCard = ({ id, title, price, stock, selected, onPress }: ItemCardProps)
 
     return (
         <TouchableOpacity
-            style={selected ? styles.cardSelected : styles.card}
+            style={selected ? {...styles.cardSelected, borderColor: stock - quantity === 0 ? 'red' : '#3d38f5' } : styles.card}
             activeOpacity={0.9}
             onPress={handleSelect}
             disabled={isDisabled}
