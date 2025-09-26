@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { IPrice } from '@/@types/IMarketContext';
 import { MarketContext } from '@/contexts/MarketContext';
-import { debounce, moderateScale, scaleSize } from '@/utils/global';
+import { moderateScale, scaleSize } from '@/utils/global';
 import { COLORS, FONTS, SIZES } from '@/utils/theme';
 
 type ItemCardProps = {
@@ -33,23 +33,23 @@ const ItemCard: React.FC<ItemCardProps> = ({ id, title, price, stock, selected, 
     const isDisabled = stock === 0;
 
     // Sync cart with local quantity
-    const updateCart = (newQuantity: number) => {
-        const newCart = cart.filter((prod) => prod.id !== id);
-        if (newQuantity > 0) {
-            setCartProducts([...newCart, { id, name: title, price, stock, quantity: newQuantity }]);
+    useEffect(() => {
+        const newCart = cart.filter(prod => prod.id !== id);
+
+        if (quantity > 0) {
+            setCartProducts([...newCart, { id, name: title, price, stock, quantity: quantity }]);
         } else {
             setCartProducts(newCart);
         }
-    };
+    }, [quantity]);
 
-    const debouncedUpdateCart = useRef(debounce(updateCart, 200)).current;
+
 
     // Handle card selection
     const handleSelect = () => {
         if (isDisabled) return;
         if (!selected && quantity === 0) {
             setQuantity(1);
-            updateCart(1);
         }
         onPress();
     };
@@ -57,18 +57,14 @@ const ItemCard: React.FC<ItemCardProps> = ({ id, title, price, stock, selected, 
     // Increase quantity
     const increment = () => {
         if (quantity < stock) {
-            const newQuantity = quantity + 1;
-            setQuantity(newQuantity);
-            debouncedUpdateCart(newQuantity);
+            setQuantity(quantity + 1);
         }
     };
 
     // Decrease quantity
     const decrement = () => {
         if (quantity > 0) {
-            const newQuantity = quantity - 1;
-            setQuantity(newQuantity);
-            debouncedUpdateCart(newQuantity);
+            setQuantity( quantity - 1);
         }
     };
 
@@ -79,7 +75,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ id, title, price, stock, selected, 
                     <Image
                         source={require('@/assets/can.png')}
                         style={stylesBig.image}
-                        resizeMode="contain"
+                        resizeMode='contain'
                     />
 
                     <Text style={stylesBig.title}>{title}</Text>

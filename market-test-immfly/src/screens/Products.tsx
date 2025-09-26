@@ -1,15 +1,16 @@
 import React, { useContext, useState, useEffect } from 'react';
+import Footer from '@/components/Footer';
+import { scaleSize } from '@/utils/global';
+import { ROUTES } from '@/@types/staticKeys';
 import ItemCard from '@/components/ItemCard';
 import { Ionicons } from '@expo/vector-icons';
+import { COLORS, FONTS, SIZES } from '@/utils/theme';
 import GenericScreen from '@/components/GenericScreen';
+import { MarketContext } from '@/contexts/MarketContext';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { AppModelNavProps } from '@/roots/AppModelNavigator';
 import { OptionValue, OPTIONS, IPrice } from '@/@types/IMarketContext';
 import { ScrollView, StyleSheet, TouchableOpacity, View, Text } from 'react-native';
-import { MarketContext } from '@/contexts/MarketContext';
-import { ROUTES } from '@/@types/staticKeys';
-import { scaleSize } from '@/utils/global';
-import { COLORS, FONTS, SIZES } from '@/utils/theme';
 
 type TProductsProps = AppModelNavProps<'Products'>;
 
@@ -112,7 +113,7 @@ export const Products: React.FC<TProductsProps> = ({ navigation }) => {
                 </ScrollView>
 
                 {finalPrice[currency] > 0 && (
-                    <View style={styles.footer}>
+                    <Footer>
                         <View style={styles.footerButton}>
                             <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate(ROUTES.SCREEN_CART, { ratio: getRatio(value) })}>
                                 <Text style={styles.payText}>
@@ -151,7 +152,7 @@ export const Products: React.FC<TProductsProps> = ({ navigation }) => {
                                 <Text style={FONTS.regular}>{getCurrencyValue('second')}</Text>
                             </TouchableOpacity>
                         </View>
-                    </View>
+                    </Footer>
                 )}
             </View>
         </GenericScreen>
@@ -172,14 +173,8 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.greyLight,
         paddingTop: 6,
     },
-    footer: {
-        paddingTop: 24,
-        alignItems: 'center',
-        backgroundColor: COLORS.white,
-        minHeight: 138,
-        marginBottom: 20,
-    },
     footerButton: {
+        paddingTop: 12,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
