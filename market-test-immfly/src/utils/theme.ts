@@ -5,6 +5,7 @@ import { moderateScale } from './global';
 type Neutral =
  | 'primary'
  | 'secondary'
+ | 'lightPrimary'
  | 'white'
  | 'black'
  | 'red'
@@ -20,6 +21,7 @@ type Neutral =
 export const COLORS: Record<Neutral, string> = {
     primary: '#3d38f5',
     secondary: '#1e1c7a',
+    lightPrimary: '#e6e5ff',
     white: '#FFFFFF',
     black: '#000000',
     red: '#FF0000',
