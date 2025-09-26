@@ -17,26 +17,28 @@ type CartItemProps = {
     item: ICartProduct;
     onPress: () => void;
     onDelete: () => void;
+    isFreezed?: boolean;
 };
 
-const CartItem: React.FC<CartItemProps> = ({ item, onPress, onDelete }) => {
+const CartItem: React.FC<CartItemProps> = ({ item, onPress, onDelete, isFreezed = false }) => {
     const { currency } = useContext(MarketContext);
 
     const translateX = useSharedValue(0);
     const scale = useSharedValue(1);
 
     const panGesture = Gesture.Pan()
+        .enabled(!isFreezed) // Disable gesture if freezed
         .activeOffsetX([-15, 15])
         .failOffsetY([-5, 5])
         .onUpdate((event) => {
-            // move left only
+            // Move left only
             translateX.value = Math.min(0, event.translationX);
         })
         .onEnd((event) => {
             const threshold = -80;
 
             if (event.translationX < threshold) {
-                // delete animation
+                // Delete animation
                 translateX.value = withTiming(-400, { duration: 200 });
                 scale.value = withTiming(0, { duration: 100 }, (finished) => {
                     if (finished) {
@@ -44,7 +46,7 @@ const CartItem: React.FC<CartItemProps> = ({ item, onPress, onDelete }) => {
                     }
                 });
             } else {
-                // bouncing effect on release
+                // Bouncing effect on release
                 translateX.value = withSpring(0, {
                     damping: 8,
                     stiffness: 120,
@@ -54,7 +56,7 @@ const CartItem: React.FC<CartItemProps> = ({ item, onPress, onDelete }) => {
             }
         });
 
-    // set opacity and translation based on gesture
+    // Set opacity and translation based on gesture
     const animatedStyle = useAnimatedStyle(() => ({
         transform: [
             { translateX: translateX.value },
@@ -81,8 +83,9 @@ const CartItem: React.FC<CartItemProps> = ({ item, onPress, onDelete }) => {
 
                     <View style={styles.itemInfo}>
                         <Text style={styles.itemName}>{item.name}</Text>
+                        {/* Total amount for items selected */}
                         <Text style={styles.itemPrice}>
-                            {item.price[currency].toFixed(2)} {currency === "EUR" ? "€" : currency === "USD" ? "$" : "£"}
+                            {(item.price[currency] * item.quantity).toFixed(2)} {currency === "EUR" ? "€" : currency === "USD" ? "$" : "£"}
                         </Text>
                     </View>
 

@@ -26,7 +26,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
 }) => {
     return (
         <Modal
-            animationType="fade"
+            animationType='fade'
             transparent={true}
             visible={visible}
             onRequestClose={onClose}>
@@ -48,14 +48,12 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                     )}
 
                     <View style={styles.actionsRow}>
-                        {/* Bouton supprimer */}
                         <TouchableOpacity
                             style={[styles.actionButton, styles.deleteButton, { flex: 1 }]}
                             onPress={() => { onDelete(); onClose(); }}>
-                            <Ionicons name="trash-outline" size={20} color={COLORS.white} />
+                            <Ionicons name='trash-outline' size={20} color={COLORS.white} />
                         </TouchableOpacity>
 
-                        {/* Bouton valider */}
                         <TouchableOpacity
                             style={[styles.actionButton, styles.validateButton, { flex: 3 }]}
                             onPress={onClose}>
@@ -71,7 +69,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
 const styles = StyleSheet.create({
     overlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.6)',
+        backgroundColor: COLORS.darkOpacity,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -105,8 +103,8 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.primary,
     },
     buttonText: {
+        ...FONTS.regularBold,
         color: COLORS.white,
         marginLeft: 6,
-        ...FONTS.regularBold,
     },
 });
