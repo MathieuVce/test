@@ -14,7 +14,7 @@ import { COLORS, FONTS, SIZES } from '@/utils/theme';
 type TProductsProps = AppModelNavProps<'Products'>;
 
 export const Products: React.FC<TProductsProps> = ({ navigation }) => {
-    const { currency, setCurrency, items, getItems, finalPrice } = useContext(MarketContext);
+    const { currency, setCurrency, items, getItems, finalPrice, initContext } = useContext(MarketContext);
 
     const [price, setPrice] = useState<IPrice>({ EUR: 0, USD: 0, Libras: 0 });
     const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -52,6 +52,7 @@ export const Products: React.FC<TProductsProps> = ({ navigation }) => {
     };
 
     useEffect(() => {
+        initContext();
         fetchItems();
     }, []);
 
@@ -93,64 +94,66 @@ export const Products: React.FC<TProductsProps> = ({ navigation }) => {
 
     return (
         <GenericScreen showArrow={true} title='Refrescos'>
-            <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
-                <View style={styles.container}>
-                    {items.map(item => (
-                        <ItemCard
-                            key={item.id}
-                            id={item.id}
-                            title={item.name}
-                            price={item.price}
-                            stock={item.stock}
-                            selected={selectedId === item.id}
-                            onPress={() => handleSelectItem(item.id)}
-                        />
-                    ))}
-                </View>
-            </ScrollView>
-
-            {finalPrice[currency] > 0 && (
-                <View style={styles.footer}>
-                    <View style={styles.footerButton}>
-                        <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate(ROUTES.SCREEN_CART)}>
-                            <Text style={styles.payText}>
-                                PAGAR <Text style={FONTS.regularBold}>{price[currency].toFixed(2)}</Text> {currency}
-                            </Text>
-                        </TouchableOpacity>
-
-                        <View style={styles.dropdownContainerWrapper}>
-                            <DropDownPicker
-                                open={open}
-                                value={value}
-                                onChangeValue={calculatePrice}
-                                items={saleType}
-                                setOpen={setOpen}
-                                setValue={setValue}
-                                setItems={setSaleType}
-                                style={styles.dropdownContainer}
-                                textStyle={FONTS.regular}
-                                labelStyle={styles.dropdownLabel}
-                                listItemContainerStyle={styles.listItemContainer}
-                                listItemLabelStyle={FONTS.regular}
-                                ArrowDownIconComponent={() => <Ionicons name='chevron-down' size={18} color={COLORS.white} />}
-                                ArrowUpIconComponent={() => <Ionicons name='chevron-up' size={18} color={COLORS.white} />}
+            <View style={styles.body}>
+                <ScrollView showsVerticalScrollIndicator={false}>
+                    <View style={styles.container}>
+                        {items.map(item => (
+                            <ItemCard
+                                key={item.id}
+                                id={item.id}
+                                title={item.name}
+                                price={item.price}
+                                stock={item.stock}
+                                selected={selectedId === item.id}
+                                onPress={() => handleSelectItem(item.id)}
                             />
+                        ))}
+                    </View>
+                </ScrollView>
+
+                {finalPrice[currency] > 0 && (
+                    <View style={styles.footer}>
+                        <View style={styles.footerButton}>
+                            <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate(ROUTES.SCREEN_CART, { ratio: getRatio(value) })}>
+                                <Text style={styles.payText}>
+                                    PAGAR <Text style={FONTS.regularBold}>{price[currency].toFixed(2)}</Text> {currency}
+                                </Text>
+                            </TouchableOpacity>
+
+                            <View style={styles.dropdownContainerWrapper}>
+                                <DropDownPicker
+                                    open={open}
+                                    value={value}
+                                    onChangeValue={calculatePrice}
+                                    items={saleType}
+                                    setOpen={setOpen}
+                                    setValue={setValue}
+                                    setItems={setSaleType}
+                                    style={styles.dropdownContainer}
+                                    textStyle={FONTS.regular}
+                                    labelStyle={styles.dropdownLabel}
+                                    listItemContainerStyle={styles.listItemContainer}
+                                    listItemLabelStyle={FONTS.regular}
+                                    ArrowDownIconComponent={() => <Ionicons name='chevron-down' size={18} color={COLORS.white} />}
+                                    ArrowUpIconComponent={() => <Ionicons name='chevron-up' size={18} color={COLORS.white} />}
+                                />
+                            </View>
+                        </View>
+
+                        <View style={styles.currencyInfo}>
+                            <TouchableOpacity style={styles.currencyButtonLeft} onPress={() => changeCurrency('first')}>
+                                <Text style={FONTS.regular}>{getCurrencyValue('first')}</Text>
+                            </TouchableOpacity>
+
+                            <Text style={styles.currencyDivider}>|</Text>
+
+                            <TouchableOpacity style={styles.currencyButtonRight} onPress={() => changeCurrency('second')}>
+                                <Text style={FONTS.regular}>{getCurrencyValue('second')}</Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
-
-                    <View style={styles.currencyInfo}>
-                        <TouchableOpacity style={styles.currencyButtonLeft} onPress={() => changeCurrency('first')}>
-                            <Text style={FONTS.regular}>{getCurrencyValue('first')}</Text>
-                        </TouchableOpacity>
-
-                        <Text style={styles.currencyDivider}>|</Text>
-
-                        <TouchableOpacity style={styles.currencyButtonRight} onPress={() => changeCurrency('second')}>
-                            <Text style={FONTS.regular}>{getCurrencyValue('second')}</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            )}
+                )}
+            </View>
         </GenericScreen>
     );
 };
@@ -166,6 +169,8 @@ const styles = StyleSheet.create({
     },
     body: {
         flex: 1,
+        backgroundColor: COLORS.greyLight,
+        paddingTop: 6,
     },
     footer: {
         paddingTop: 24,

@@ -11,12 +11,14 @@ import { COLORS, SIZES } from '@/utils/theme';
 
 type GenericScreenProps = {
     title: string;
+    description?: string;
     showArrow?: boolean;
     children: React.ReactNode;
 };
 
 const GenericScreen: React.FC<GenericScreenProps> = ({
     title,
+    description = '',
     showArrow = false,
     children,
 }) => {
@@ -24,7 +26,11 @@ const GenericScreen: React.FC<GenericScreenProps> = ({
         <View style={styles.overlay}>
             <View style={styles.container}>
                 <View style={styles.header}>
-                    <Text style={styles.title}>{title}</Text>
+                    <View style={styles.titleContainer}>
+                        <Text style={styles.title}>{title}</Text>
+                        {description && <Text style={styles.description}>{description}</Text>}
+                    </View>
+
                     <View style={styles.actions}>
                         {showArrow && (
                             <TouchableOpacity onPress={() => {}}>
@@ -67,6 +73,15 @@ const styles = StyleSheet.create({
         marginTop: 18,
         marginBottom: 6,
     },
+    titleContainer: {
+        flex: 1,
+        flexDirection: 'column',
+    },
+    description: {
+        fontSize: scaleSize(16),
+        color: COLORS.grey,
+        marginTop: 4,
+    },
     title: {
         fontSize: scaleSize(32),
         fontWeight: 'bold',
@@ -83,7 +98,5 @@ const styles = StyleSheet.create({
     },
     body: {
         flex: 1,
-        backgroundColor: COLORS.greyLight,
-        paddingTop: 6,
     },
 });

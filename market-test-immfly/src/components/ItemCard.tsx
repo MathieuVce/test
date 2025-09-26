@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import {
     View,
     Text,
@@ -7,10 +7,11 @@ import {
     TouchableOpacity,
     Dimensions,
     ActivityIndicator,
+    Image,
 } from 'react-native';
 import { IPrice } from '@/@types/IMarketContext';
 import { MarketContext } from '@/contexts/MarketContext';
-import { moderateScale, scaleSize } from '@/utils/global';
+import { debounce, moderateScale, scaleSize } from '@/utils/global';
 import { COLORS, FONTS, SIZES } from '@/utils/theme';
 
 type ItemCardProps = {
@@ -19,115 +20,240 @@ type ItemCardProps = {
     price: IPrice;
     stock: number;
     selected: boolean;
+    quantity?: number;
+    isBig?: boolean;
     onPress: () => void;
 };
 
-const ItemCard: React.FC<ItemCardProps> = ({ id, title, price, stock, selected, onPress }) => {
+const ItemCard: React.FC<ItemCardProps> = ({ id, title, price, stock, selected, quantity: quantityProps, isBig = false, onPress }) => {
     const [loading, setLoading] = useState<boolean>(true);
-    const [quantity, setQuantity] = useState<number>(0);
+    const [quantity, setQuantity] = useState<number>(quantityProps ?? 0);
 
     const { currency, cart, setCartProducts } = useContext(MarketContext);
     const isDisabled = stock === 0;
 
     // Sync cart with local quantity
-    useEffect(() => {
-        if (quantity > 0) {
-            const newCart = cart.filter((prod) => prod.id !== id);
-            setCartProducts([...newCart, { id, name: title, price, stock, quantity }]);
+    const updateCart = (newQuantity: number) => {
+        const newCart = cart.filter((prod) => prod.id !== id);
+        if (newQuantity > 0) {
+            setCartProducts([...newCart, { id, name: title, price, stock, quantity: newQuantity }]);
         } else {
-            setCartProducts(cart.filter((prod) => prod.id !== id));
+            setCartProducts(newCart);
         }
-    }, [quantity]);
+    };
+
+    const debouncedUpdateCart = useRef(debounce(updateCart, 200)).current;
 
     // Handle card selection
     const handleSelect = () => {
         if (isDisabled) return;
         if (!selected && quantity === 0) {
             setQuantity(1);
+            updateCart(1);
         }
         onPress();
     };
 
     // Increase quantity
     const increment = () => {
-        if (quantity < stock) setQuantity(quantity + 1);
+        if (quantity < stock) {
+            const newQuantity = quantity + 1;
+            setQuantity(newQuantity);
+            debouncedUpdateCart(newQuantity);
+        }
     };
 
     // Decrease quantity
     const decrement = () => {
-        if (quantity > 0) setQuantity(quantity - 1);
+        if (quantity > 0) {
+            const newQuantity = quantity - 1;
+            setQuantity(newQuantity);
+            debouncedUpdateCart(newQuantity);
+        }
     };
 
     return (
-        <TouchableOpacity
-            style={selected ? {...styles.cardSelected, borderColor: stock - quantity === 0 ? COLORS.red : COLORS.primary } : styles.card}
-            activeOpacity={0.9}
-            onPress={handleSelect}
-            disabled={isDisabled}
-        >
-            {/* Background image */}
-            <ImageBackground
-                source={require('@/assets/can.png')}
-                style={styles.image}
-                imageStyle={styles.imageStyle}
-                onLoadEnd={() => setLoading(false)}
-            >
-                {/* Loader while image loads */}
-                {loading && (
-                    <View style={styles.loaderContainer}>
-                        <ActivityIndicator size='large' color={COLORS.white} />
-                    </View>
-                )}
+        <>
+            { isBig ? (
+                <View style={stylesBig.container}>
+                    <Image
+                        source={require('@/assets/can.png')}
+                        style={stylesBig.image}
+                        resizeMode="contain"
+                    />
 
-                {/* Badge with quantity */}
-                {quantity > 0 && (
-                    <View style={styles.badge}>
-                        <Text style={styles.badgeText}>{quantity}</Text>
-                    </View>
-                )}
+                    <Text style={stylesBig.title}>{title}</Text>
 
-                {/* Product info (name, stock, price) */}
-                <View style={styles.infoBox}>
-                    <View style={styles.leftColumn}>
-                        <Text style={styles.title}>{title}</Text>
-                        <Text style={styles.stock}>
-                            {stock - quantity} {(stock - quantity) <= 1 ? 'unidad' : 'unidades'}
+                    {/* Quantity */}
+                    <View style={stylesBig.stockContainer}>
+                        <Text style={stylesBig.stock}>
+                            {stock - quantity} {(stock - quantity) <= 1 ? 'unidad disponible' : 'unidades disponibles'}
                         </Text>
                     </View>
-                    <View style={styles.rightColumn}>
-                        {currency === 'EUR' && <Text style={styles.price}>{price[currency].toFixed(2)} €</Text>}
-                        {currency === 'USD' && <Text style={styles.price}>{price[currency].toFixed(2)} $</Text>}
-                        {currency === 'Libras' && <Text style={styles.price}>{price[currency].toFixed(2)} £</Text>}
-                    </View>
-                </View>
 
-                {/* Counter shown only if selected */}
-                {selected && (
-                    <View style={styles.counterBox}>
-                        <TouchableOpacity style={styles.counterButton} onPress={decrement}>
-                            <Text style={styles.counterText}>-</Text>
+                    {/* Price */}
+                    <Text style={stylesBig.price}>
+                        {currency === 'EUR' && `${(price[currency] * quantity).toFixed(2)} €`}
+                        {currency === 'USD' && `${(price[currency] * quantity).toFixed(2)} $`}
+                        {currency === 'Libras' && `${(price[currency] * quantity).toFixed(2)} £`}
+                    </Text>
+
+                    {/* Counter */}
+                    <View style={stylesBig.counterBox}>
+                        <TouchableOpacity style={stylesBig.counterButton} disabled={quantity === 0} onPress={decrement}>
+                            <Text style={stylesBig.counterText}>-</Text>
                         </TouchableOpacity>
 
-                        <Text style={styles.counterValue}>{quantity}</Text>
+                        <Text style={stylesBig.counterValue}>{quantity}</Text>
 
-                        <TouchableOpacity style={styles.counterButton} onPress={increment}>
-                            <Text style={styles.counterText}>+</Text>
+                        <TouchableOpacity style={stylesBig.counterButton} disabled={stock - quantity === 0}  onPress={increment}>
+                            <Text style={stylesBig.counterText}>+</Text>
                         </TouchableOpacity>
                     </View>
-                )}
-            </ImageBackground>
-
-            {/* If product is out of stock */}
-            {isDisabled && (
-                <View style={styles.disabledContainer}>
-                    <Text style={styles.disabledText}>Agotado</Text>
                 </View>
+            ) : (
+                <TouchableOpacity
+                    style={selected ? {...styles.cardSelected, borderColor: stock - quantity === 0 ? COLORS.red : COLORS.primary } : styles.card}
+                    activeOpacity={0.9}
+                    onPress={handleSelect}
+                    disabled={isDisabled}
+                >
+                    {/* Background image */}
+                    <ImageBackground
+                        source={require('@/assets/can.png')}
+                        style={styles.image}
+                        imageStyle={styles.imageStyle}
+                        onLoadEnd={() => setLoading(false)}
+                    >
+                        {/* Loader while image loads */}
+                        {loading && (
+                            <View style={styles.loaderContainer}>
+                                <ActivityIndicator size='large' color={COLORS.white} />
+                            </View>
+                        )}
+
+                        {/* Badge with quantity */}
+                        {quantity > 0 && (
+                            <View style={styles.badge}>
+                                <Text style={styles.badgeText}>{quantity}</Text>
+                            </View>
+                        )}
+
+                        {/* Product info (name, stock, price) */}
+                        <View style={styles.infoBox}>
+                            <View style={styles.leftColumn}>
+                                <Text style={styles.title}>{title}</Text>
+                                <Text style={styles.stock}>
+                                    {stock - quantity} {(stock - quantity) <= 1 ? 'unidad' : 'unidades'}
+                                </Text>
+                            </View>
+                            <View style={styles.rightColumn}>
+                                <Text style={styles.price}>
+                                    {currency === 'EUR' && `${price[currency].toFixed(2)} €`}
+                                    {currency === 'USD' && `${price[currency].toFixed(2)} $`}
+                                    {currency === 'Libras' && `${price[currency].toFixed(2)} £`}
+                                </Text>
+                            </View>
+                        </View>
+
+                        {/* Counter shown only if selected */}
+                        {selected && (
+                            <View style={styles.counterBox}>
+                                <TouchableOpacity style={styles.counterButton} onPress={decrement}>
+                                    <Text style={styles.counterText}>-</Text>
+                                </TouchableOpacity>
+
+                                <Text style={styles.counterValue}>{quantity}</Text>
+
+                                <TouchableOpacity style={styles.counterButton} onPress={increment}>
+                                    <Text style={styles.counterText}>+</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                    </ImageBackground>
+
+                    {/* If product is out of stock */}
+                    {isDisabled && (
+                        <View style={styles.disabledContainer}>
+                            <Text style={styles.disabledText}>Agotado</Text>
+                        </View>
+                    )}
+                </TouchableOpacity>
             )}
-        </TouchableOpacity>
+        </>
     );
 };
 
 export default ItemCard;
+
+const stylesBig = StyleSheet.create({
+    container: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 12,
+        backgroundColor: COLORS.white,
+        borderRadius: SIZES.radius,
+        shadowColor: COLORS.black,
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 3,
+    },
+    image: {
+        width: 150,
+        height: 150,
+        transform: [{ scale: 1.4 }],
+        shadowColor: COLORS.black,
+        shadowOffset: {
+            width: 4,
+            height: 1,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 2,
+        elevation: 2,
+    },
+    title: {
+        ...FONTS.regularBold,
+        marginBottom: 4,
+        fontSize: scaleSize(20),
+    },
+    stockContainer: {
+        paddingHorizontal: 12,
+        marginBottom: 12,
+        width: 200,
+    },
+    stock: {
+        fontSize: scaleSize(12),
+        color: COLORS.grey,
+        textAlign: 'center',
+    },
+    price: {
+        fontSize: scaleSize(18),
+        fontWeight: 'bold',
+        color: COLORS.primary,
+        marginBottom: 12,
+    },
+    counterBox: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: COLORS.lightGrey,
+        borderRadius: SIZES.radius * 2,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        marginBottom: 4,
+    },
+    counterButton: {
+        paddingHorizontal: 24,
+    },
+    counterText: {
+        ...FONTS.regularBold,
+        fontSize: scaleSize(22),
+    },
+    counterValue: {
+        ...FONTS.regularBold,
+        fontSize: scaleSize(20),
+        marginHorizontal: moderateScale(16),
+    },
+});
 
 const styles = StyleSheet.create({
     card: {

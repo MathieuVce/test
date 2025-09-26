@@ -44,6 +44,13 @@ export const MarketProvider: React.FC<PropsWithChildren> = ({ children }) => {
         });
     };
 
+    // Initialize context with default values
+    const initContext = (): void => {
+        setCart([]);
+        setFinalPrice({ EUR: 0, USD: 0, Libras: 0 });
+        setCurrencyState('EUR');
+    };
+
     // Update cart products
     const setCartProducts = (products: ICartProduct[]): void => {
         setCart(products);
@@ -67,7 +74,7 @@ export const MarketProvider: React.FC<PropsWithChildren> = ({ children }) => {
 
     // Provide context to children
     return (
-        <MarketContext.Provider value={{ items, currency, cart, finalPrice, calculateFinalPrice, setCartProducts, setCurrency, getItems, setItems }}>
+        <MarketContext.Provider value={{ items, currency, cart, finalPrice, calculateFinalPrice, setCartProducts, setCurrency, getItems, setItems, initContext }}>
             {children}
         </MarketContext.Provider>
     );

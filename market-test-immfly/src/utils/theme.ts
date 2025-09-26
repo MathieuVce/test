@@ -1,5 +1,5 @@
 import { Dimensions, TextStyle } from 'react-native';
-import { moderateScale, scaleSize } from './global';
+import { moderateScale } from './global';
 
 // Global colors
 type Neutral =

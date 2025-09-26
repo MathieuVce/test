@@ -28,11 +28,13 @@ export interface IMarketContext {
     getItems: TGetItemsFC;
     setItems: TSetItemsFC;
     setCurrency: TSetCurrencyFC;
+    initContext: TInitContextFC;
     setCartProducts: TSetCartProductsFC;
     calculateFinalPrice: TCalculateFinalPriceFC;
 }
 
 // Function type definitions for MarketContext
+export type TInitContextFC = () => void;
 export type TGetItemsFC = () => Promise<IItem[]>;
 export type TSetItemsFC = (items: IItem[]) => Promise<any>;
 export type TSetCurrencyFC = (currency: keyof IPrice) => void;
@@ -46,6 +48,7 @@ export const defaultMarketValue: IMarketContext = {
     finalPrice: { EUR: 0, USD: 0, Libras: 0 },
     currency: 'EUR',
 
+    initContext: () => {},
     setCurrency: () => {},
     setCartProducts: () => {},
     calculateFinalPrice: () => {},
