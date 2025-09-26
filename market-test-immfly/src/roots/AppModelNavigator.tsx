@@ -10,7 +10,7 @@ interface IAppModelNavProps {}
 // Define the navigation parameter list
 type AppModelNavParamList = {
     Products: undefined;
-    Cart: undefined;
+    Cart: { ratio: number };
 };
 
 // Type for navigation and route props for each screen
