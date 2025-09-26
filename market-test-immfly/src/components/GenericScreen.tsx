@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useContext, useState } from 'react';
 import {
     View,
     Text,
     StyleSheet,
     TouchableOpacity,
+    ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { scaleSize } from '@/utils/global';
 import { COLORS, SIZES } from '@/utils/theme';
+import { MarketContext } from '@/contexts/MarketContext';
 
 type GenericScreenProps = {
     title: string;
@@ -22,6 +24,15 @@ const GenericScreen: React.FC<GenericScreenProps> = ({
     showArrow = false,
     children,
 }) => {
+    const { resetDatbase } = useContext(MarketContext);
+    const [loaading, setLoading] = useState<boolean>(false);
+
+    const handleResetDatabase = async () => {
+        setLoading(true);
+        await resetDatbase();
+        setLoading(false);
+    }
+
     return (
         <View style={styles.overlay}>
             <View style={styles.container}>
@@ -32,8 +43,9 @@ const GenericScreen: React.FC<GenericScreenProps> = ({
                     </View>
 
                     <View style={styles.actions}>
+                        {/* Delete and reset database onClick + fetch Items */}
                         {showArrow && (
-                            <TouchableOpacity onPress={() => {}}>
+                            <TouchableOpacity onPress={handleResetDatabase} disabled={loaading}>
                                 <Ionicons name='chevron-down' size={scaleSize(32)} color={COLORS.lightGrey} />
                             </TouchableOpacity>
                         )}
@@ -42,8 +54,17 @@ const GenericScreen: React.FC<GenericScreenProps> = ({
                         </View>
                     </View>
                 </View>
+                {/* Display children or loader */}
                 <View style={styles.body}>
-                    {children}
+                    {loaading ? (
+                        <>
+                            <View style={styles.loader}>
+                                <ActivityIndicator size="large" color={COLORS.purple} />
+                            </View>
+                        </>
+                    ) : (
+                        children
+                    )}
                 </View>
             </View>
         </View>
@@ -98,5 +119,10 @@ const styles = StyleSheet.create({
     },
     body: {
         flex: 1,
+    },
+    loader: {
+        flex: 0.7,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
