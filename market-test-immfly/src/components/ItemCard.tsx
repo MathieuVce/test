@@ -43,8 +43,6 @@ const ItemCard: React.FC<ItemCardProps> = ({ id, title, price, stock, selected, 
         }
     }, [quantity]);
 
-
-
     // Handle card selection
     const handleSelect = () => {
         if (isDisabled) return;
@@ -257,7 +255,6 @@ const styles = StyleSheet.create({
         aspectRatio: 1,
         marginBottom: 8,
         borderRadius: SIZES.radius,
-        overflow: 'hidden',
         backgroundColor: COLORS.white,
     },
     cardSelected: {
