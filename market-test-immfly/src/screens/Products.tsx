@@ -95,7 +95,7 @@ export const Products: React.FC<TProductsProps> = ({ navigation }) => {
 
     return (
         <GenericScreen showArrow={true} title='Refrescos'>
-            <View style={styles.body}>
+            <View style={styles.body} testID="product">
                 <ScrollView showsVerticalScrollIndicator={false}>
                     <View style={styles.container}>
                         {items.map(item => (
