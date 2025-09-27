@@ -2,9 +2,11 @@
 
 [![wakatime](https://wakatime.com/badge/github/MathieuVce/test.svg)](https://wakatime.com/badge/github/MathieuVce/test)
 
-![Expo](https://img.shields.io/badge/Expo-000020?style=flat&logo=expo&logoColor=white)
 ![React Native](https://img.shields.io/badge/React%20Native-0A80C1?style=flat&logo=react&logoColor=white)
+![Expo](https://img.shields.io/badge/Expo-000020?style=flat&logo=expo&logoColor=white)
 ![EAS Build](https://img.shields.io/badge/EAS-Build-blue?style=flat&logo=expo)
+[![Firebase Functions](https://img.shields.io/badge/firebase-functions-blue)](https://firebase.google.com/docs/functions)
+
 
 This project is a React Native application built with **Expo**.
 It allows users to browse products, manage a cart, and complete payments with real-time stock updates using Firebase.
@@ -182,6 +184,8 @@ This project uses a backend stored as a Git submodule. The Firebase backend serv
 ### About the Backend
 
 The Firebase backend server with the API endpoints is contained within this submodule. After initializing the submodule, you will have access to the complete backend code and deployment configuration.
+
+[Backend README](market-test-immfly/backend/README.md)
 
 ## Setup Steps
 

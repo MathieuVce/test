@@ -39,7 +39,7 @@ export interface IMarketContext {
 export type TInitContextFC = () => void;
 export type TSetItemsFC = () => Promise<any>;
 export type TGetItemsFC = () => Promise<IItem[]>;
-export type TSendPaymentFC = () => Promise<void>;
+export type TSendPaymentFC = () => Promise<boolean>;
 export type TResetDatabseFC = () => Promise<void>;
 export type TSetCurrencyFC = (currency: keyof IPrice) => void;
 export type TSetCartProductsFC = (products: ICartProduct[]) => void;

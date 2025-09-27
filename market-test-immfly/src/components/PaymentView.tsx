@@ -14,15 +14,14 @@ import { MarketContext } from '@/contexts/MarketContext';
 
 type PaymentViewProps = {
     ratio: number;
-    onPaymentSuccess: () => void;
-    setIsFreezed: React.Dispatch<React.SetStateAction<boolean>>
+    onPaymentSuccess: () => Promise<void>;
 };
 
-const PaymentView: React.FC<PaymentViewProps> = ({ ratio, onPaymentSuccess, setIsFreezed }) => {
+const PaymentView: React.FC<PaymentViewProps> = ({ ratio, onPaymentSuccess }) => {
     const [modalVisible, setModalVisible] = useState<boolean>(false);
     const [amount, setAmount] = useState<string>('');
 
-    const { currency, finalPrice, setItems, cart } = useContext(MarketContext);
+    const { currency, finalPrice, cart } = useContext(MarketContext);
     // Variable to handle partial payments
     const [localFinalPrice, setLocalFinalPrice] = useState<number>(Number((ratio * finalPrice[currency]).toFixed(2)));
 
@@ -38,12 +37,10 @@ const PaymentView: React.FC<PaymentViewProps> = ({ ratio, onPaymentSuccess, setI
 
         // If payment covers total or cart is empty update stock
         if (numericAmount === localFinalPrice || cart.length === 0) {
-            await setItems();
-            onPaymentSuccess();
+            await onPaymentSuccess();
             setLocalFinalPrice(0);
         } else {
-            // Partial payment, freeze cart and update local price
-            setIsFreezed(true);
+            // Partial payment
             setLocalFinalPrice(prev => Number((prev - numericAmount).toFixed(2)));
         }
 

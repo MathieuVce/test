@@ -1,6 +1,7 @@
 import React, { PropsWithChildren, useEffect } from 'react';
 import { createContext, useState } from 'react';
 import { defaultMarketValue, ICartProduct, IItem, IMarketContext, IPrice, TGetItemsFC, TSendPaymentFC, TSetItemsFC } from '@/@types/IMarketContext';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 export const MarketContext = createContext<IMarketContext>(defaultMarketValue);
 
@@ -45,13 +46,14 @@ export const MarketProvider: React.FC<PropsWithChildren> = ({ children }) => {
     const resetDatbase = async (): Promise<void> => {
         try {
             const res = await fetch(`${baseUrl}/reset`, {
-                method: "GET"
+                method: 'GET'
             });
             if (res.status === 200) {
+                await getItems();
                 initContext();
             }
         } catch (error) {
-            console.error("Error resetting database", error);
+            console.error('Error resetting database', error);
         }
     };
 
@@ -70,7 +72,7 @@ export const MarketProvider: React.FC<PropsWithChildren> = ({ children }) => {
         let productsList: IItem[] = [];
         try {
             const res = await fetch(`${baseUrl}/products`, {
-                method: "GET"
+                method: 'GET'
             });
 
             if (res.status === 200) {
@@ -88,27 +90,31 @@ export const MarketProvider: React.FC<PropsWithChildren> = ({ children }) => {
     const setItems: TSetItemsFC = async (): Promise<void> => {
         try {
             const res = await fetch(`${baseUrl}/products`, {
-                method: "PATCH",
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(cart)
+                body: JSON.stringify({ cart })
             });
             if (res.status === 200) return;
         } catch (error) {
-            console.error("Error", error);
+            console.error('Error', error);
         }
     };
 
     // Simulate payment process
-    const sendPayment: TSendPaymentFC = async (): Promise<void> => {
+    const sendPayment: TSendPaymentFC = async (): Promise<boolean> => {
         try {
             const res = await fetch(`${baseUrl}/payment`, {
-                method: "GET"
+                method: 'GET'
             });
-            if (res.status === 200) return;
+            if (res.status === 200) {
+                return true;
+            }
+            return false;
         } catch (error) {
             console.error(error);
+            return false;
         }
     };
 
