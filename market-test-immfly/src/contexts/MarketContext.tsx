@@ -1,14 +1,12 @@
 import React, { PropsWithChildren, useEffect } from 'react';
 import { createContext, useState } from 'react';
-import { defaultMarketValue, ICartProduct, IItem, IMarketContext, IPrice, TGetItemsFC, TSetItemsFC } from '@/@types/IMarketContext';
-import { collection, getDocs, query, updateDoc, where } from 'firebase/firestore';
-import { db } from '@/database/firebaseConfig';
-import { uploadRandomProducts } from '@/database/uploadMock';
+import { defaultMarketValue, ICartProduct, IItem, IMarketContext, IPrice, TGetItemsFC, TSendPaymentFC, TSetItemsFC } from '@/@types/IMarketContext';
 
 export const MarketContext = createContext<IMarketContext>(defaultMarketValue);
 
 export const MarketProvider: React.FC<PropsWithChildren> = ({ children }) => {
 
+    const baseUrl = 'https://us-central1-market-test-immfly.cloudfunctions.net'
     const [items, setMarketItems] = useState<IItem[]>([]);
     const [currency, setCurrencyState] = useState<keyof IPrice>('EUR');
     const [cart, setCart] = useState<ICartProduct[]>([]);
@@ -45,9 +43,16 @@ export const MarketProvider: React.FC<PropsWithChildren> = ({ children }) => {
 
     // Reset database and upload mock products
     const resetDatbase = async (): Promise<void> => {
-        await uploadRandomProducts();
-        await getItems();
-        initContext();
+        try {
+            const res = await fetch(`${baseUrl}/reset`, {
+                method: "GET"
+            });
+            if (res.status === 200) {
+                initContext();
+            }
+        } catch (error) {
+            console.error("Error resetting database", error);
+        }
     };
 
     // Update cart products
@@ -62,39 +67,48 @@ export const MarketProvider: React.FC<PropsWithChildren> = ({ children }) => {
 
     // Fetch items from Firestore
     const getItems: TGetItemsFC = async (): Promise<IItem[]> => {
-        const productsCol = collection(db, 'products');
-        const productsSnapshot = await getDocs(productsCol);
-        const productsList = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        let productsList: IItem[] = [];
+        try {
+            const res = await fetch(`${baseUrl}/products`, {
+                method: "GET"
+            });
 
-        setMarketItems(productsList as unknown as IItem[]);
-        return productsList as unknown as IItem[];
+            if (res.status === 200) {
+                productsList = await res.json();
+                setMarketItems(productsList);
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            return productsList;
+        }
     };
 
     // Update items after payment
     const setItems: TSetItemsFC = async (): Promise<void> => {
         try {
-            for (let item of cart) {
-
-                // Query to find the product by its id
-                const productQuery = query(
-                    collection(db, 'products'),
-                    where('id', '==', item.id)
-                );
-
-                const querySnapshot = await getDocs(productQuery);
-
-                if (!querySnapshot.empty) {
-                    const productDoc = querySnapshot.docs[0];
-                    const productRef = productDoc.ref;
-
-                    // Update stock, ensuring it doesn't go below zero
-                    await updateDoc(productRef, {
-                        stock: Math.max(productDoc.data().stock - item.quantity, 0)
-                    });
-                }
-            }
+            const res = await fetch(`${baseUrl}/products`, {
+                method: "PATCH",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(cart)
+            });
+            if (res.status === 200) return;
         } catch (error) {
             console.error("Error", error);
+        }
+    };
+
+    // Simulate payment process
+    const sendPayment: TSendPaymentFC = async (): Promise<void> => {
+        try {
+            const res = await fetch(`${baseUrl}/payment`, {
+                method: "GET"
+            });
+            if (res.status === 200) return;
+        } catch (error) {
+            console.error(error);
         }
     };
 
@@ -110,7 +124,8 @@ export const MarketProvider: React.FC<PropsWithChildren> = ({ children }) => {
             getItems,
             setItems,
             initContext,
-            resetDatbase }}
+            resetDatbase,
+            sendPayment }}
         >
             {children}
         </MarketContext.Provider>
