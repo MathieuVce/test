@@ -1,6 +1,10 @@
 # Immfly assessment
 
-[![wakatime](https://wakatime.com/badge/user/c9dbeee1-35ba-48e9-a5b4-4357d3278db3/project/42a3a115-596f-4776-85fb-7461e105cff3.svg)](https://wakatime.com/badge/user/c9dbeee1-35ba-48e9-a5b4-4357d3278db3/project/42a3a115-596f-4776-85fb-7461e105cff3)
+[![wakatime](https://wakatime.com/badge/github/MathieuVce/test.svg)](https://wakatime.com/badge/github/MathieuVce/test)
+
+![Expo](https://img.shields.io/badge/Expo-000020?style=flat&logo=expo&logoColor=white)
+![React Native](https://img.shields.io/badge/React%20Native-0A80C1?style=flat&logo=react&logoColor=white)
+![EAS Build](https://img.shields.io/badge/EAS-Build-blue?style=flat&logo=expo)
 
 This project is a React Native application built with **Expo**.  
 It allows users to browse products, manage a cart, and complete payments with real-time stock updates using Firebase.
