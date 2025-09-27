@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View, Text } from 'react-native';
+import { ScrollView, StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { COLORS } from '@/utils/theme';
 import Footer from '@/components/Footer';
 import { scaleSize } from '@/utils/global';
@@ -15,7 +15,8 @@ import { AppModelNavProps } from '@/roots/AppModelNavigator';
 type TCartProps = AppModelNavProps<typeof ROUTES.SCREEN_CART>;
 
 export const Cart: React.FC<TCartProps> = ({ navigation, route }) => {
-    const { cart, setCartProducts, currency } = useContext(MarketContext);
+    const { cart, setCartProducts, currency, setItems, sendPayment } = useContext(MarketContext);
+    const [loading, setLoading] = useState<boolean>(false);
     const [visible, setVisible] = useState<boolean>(false);
     const [isFreezed, setIsFreezed] = useState<boolean>(false);
     const [item, setItem] = useState<ICartProduct>();
@@ -32,8 +33,17 @@ export const Cart: React.FC<TCartProps> = ({ navigation, route }) => {
         cart.sort((a, b) => a.price[currency] - b.price[currency]);
     }, [cart, currency]);
 
-    const handlePaymentSuccess = () => {
-        navigation.navigate(ROUTES.SCREEN_PRODUCTS);
+    const handlePaymentSuccess = async () => {
+        setLoading(true);
+        const paymentResult = await sendPayment();
+        if (paymentResult) {
+            await setItems();
+            navigation.navigate(ROUTES.SCREEN_PRODUCTS);
+            setLoading(false);
+            return;
+        }
+        setLoading(false);
+        setIsFreezed(false);
     }
 
     // Show modal on item press if payment is not in progress
@@ -45,32 +55,51 @@ export const Cart: React.FC<TCartProps> = ({ navigation, route }) => {
     };
 
     return (
-        <GenericScreen title='Ticket' description='Productos seleccionados'>
-            {cart.length === 0 && (
-                <Text style={styles.empty}>El carrito está vacío</Text>
-            )}
-            <ScrollView showsVerticalScrollIndicator={false}>
-                <View style={styles.container}>
-                    {cart.map((item, index) => (
-                        <ItemList
-                            key={index}
-                            item={item}
-                            onPress={() => { handleOnPress(item)}}
-                            onDelete={() => { handleDelete(item.id) }}
-                            isFreezed={isFreezed}
-                        />
-                    ))}
+        <>
+            {loading ? (
+                <View style={styles.loader}>
+                    <ActivityIndicator size="large" color={COLORS.primary} />
                 </View>
-            </ScrollView>
-            <ItemModal visible={visible} item={item!} onClose={() => {setVisible(false)}} onDelete={() => {handleDelete(item?.id!)}}/>
-            <Footer>
-                <PaymentView ratio={ratio} onPaymentSuccess={handlePaymentSuccess} setIsFreezed={setIsFreezed} />
-            </Footer>
-        </GenericScreen>
+            ) : (
+                <GenericScreen title='Ticket' description='Productos seleccionados'>
+                    {cart.length === 0 && (
+                        <Text style={styles.empty}>El carrito está vacío</Text>
+                    )}
+                    <ScrollView showsVerticalScrollIndicator={false} disableScrollViewPanResponder={isFreezed}>
+                        <View style={styles.container}>
+                            {cart.map((item, index) => (
+                                <ItemList
+                                    key={index}
+                                    item={item}
+                                    onPress={() => { handleOnPress(item)}}
+                                    onDelete={() => { handleDelete(item.id) }}
+                                    isFreezed={isFreezed}
+                                />
+                            ))}
+                        </View>
+                    </ScrollView>
+                    <ItemModal visible={visible} item={item!} onClose={() => {setVisible(false)}} onDelete={() => {handleDelete(item?.id!)}}/>
+                    <TouchableOpacity style={styles.payButton} onPress={() => setIsFreezed(true)}>
+                        <Text style={styles.payButtonText}>PAGAR</Text>
+                    </TouchableOpacity>
+                    {isFreezed && (
+                        <Footer>
+                            <PaymentView ratio={ratio} onPaymentSuccess={handlePaymentSuccess} />
+                        </Footer>
+                    )}
+                </GenericScreen>
+            )}
+        </>
     );
 };
 
 const styles = StyleSheet.create({
+    loader: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: COLORS.white,
+    },
     container: {
         flex: 1,
         paddingVertical: 2,
@@ -81,5 +110,20 @@ const styles = StyleSheet.create({
         marginVertical: 20,
         color: COLORS.grey,
         fontSize: scaleSize(16),
+    },
+    payButton: {
+        position: 'absolute',
+        bottom: 20,
+        left: 20,
+        right: 20,
+        backgroundColor: COLORS.primary,
+        paddingVertical: 15,
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    payButtonText: {
+        color: COLORS.white,
+        fontSize: scaleSize(16),
+        fontWeight: 'bold',
     },
 });
