@@ -1,7 +1,9 @@
 import React, { PropsWithChildren, useEffect } from 'react';
 import { createContext, useState } from 'react';
 import { defaultMarketValue, ICartProduct, IItem, IMarketContext, IPrice, TGetItemsFC, TSendPaymentFC, TSetItemsFC } from '@/@types/IMarketContext';
-import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import { collection, getDocs, query, updateDoc, where } from 'firebase/firestore';
+import { db } from '@/database/firebaseConfig';
+import { uploadRandomProducts } from '@/database/uploadMock';
 
 export const MarketContext = createContext<IMarketContext>(defaultMarketValue);
 
@@ -44,17 +46,9 @@ export const MarketProvider: React.FC<PropsWithChildren> = ({ children }) => {
 
     // Reset database and upload mock products
     const resetDatbase = async (): Promise<void> => {
-        try {
-            const res = await fetch(`${baseUrl}/reset`, {
-                method: 'GET'
-            });
-            if (res.status === 200) {
-                await getItems();
-                initContext();
-            }
-        } catch (error) {
-            console.error('Error resetting database', error);
-        }
+        await uploadRandomProducts();
+        await getItems();
+        initContext();
     };
 
     // Update cart products
@@ -69,34 +63,37 @@ export const MarketProvider: React.FC<PropsWithChildren> = ({ children }) => {
 
     // Fetch items from Firestore
     const getItems: TGetItemsFC = async (): Promise<IItem[]> => {
-        let productsList: IItem[] = [];
-        try {
-            const res = await fetch(`${baseUrl}/products`, {
-                method: 'GET'
-            });
+        const productsCol = collection(db, 'products');
+        const productsSnapshot = await getDocs(productsCol);
+        const productsList: IItem[] = productsSnapshot.docs.map(doc => (doc.data() as IItem));
 
-            if (res.status === 200) {
-                productsList = await res.json();
-                setMarketItems(productsList);
-            }
-        } catch (error) {
-            console.error(error);
-        } finally {
-            return productsList;
-        }
+        setMarketItems(productsList as unknown as IItem[]);
+        return productsList as unknown as IItem[];
     };
 
     // Update items after payment
     const setItems: TSetItemsFC = async (): Promise<void> => {
         try {
-            const res = await fetch(`${baseUrl}/products`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ cart })
-            });
-            if (res.status === 200) return;
+            for (let item of cart) {
+
+                // Query to find the product by its id
+                const productQuery = query(
+                    collection(db, 'products'),
+                    where('id', '==', item.id)
+                );
+
+                const querySnapshot = await getDocs(productQuery);
+
+                if (!querySnapshot.empty) {
+                    const productDoc = querySnapshot.docs[0];
+                    const productRef = productDoc.ref;
+
+                    // Update stock, ensuring it doesn't go below zero
+                    await updateDoc(productRef, {
+                        stock: Math.max(productDoc.data().stock - item.quantity, 0)
+                    });
+                }
+            }
         } catch (error) {
             console.error('Error', error);
         }
@@ -104,18 +101,7 @@ export const MarketProvider: React.FC<PropsWithChildren> = ({ children }) => {
 
     // Simulate payment process
     const sendPayment: TSendPaymentFC = async (): Promise<boolean> => {
-        try {
-            const res = await fetch(`${baseUrl}/payment`, {
-                method: 'GET'
-            });
-            if (res.status === 200) {
-                return true;
-            }
-            return false;
-        } catch (error) {
-            console.error(error);
-            return false;
-        }
+        return true;
     };
 
     // Provide context to children
