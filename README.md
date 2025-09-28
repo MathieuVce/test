@@ -173,7 +173,7 @@ import { COLORS, SIZES, FONTS } from '@/utils/theme';
 - [Screen1 product list items mocked](https://github.com/MathieuVce/test/pull/2)
 - [Screen2 list items view with mocks](https://github.com/MathieuVce/test/pull/3)
 - [Screen2 footer, seat selector and payment handling with API calls to database](https://github.com/MathieuVce/test/pull/4)
-- [Integrate backend submodule and http requests](https://github.com/MathieuVce/test/pull/4)
+- [Integrate backend submodule and http requests](https://github.com/MathieuVce/test/pull/5)
 
 ---
 
