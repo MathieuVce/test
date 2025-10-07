@@ -80,6 +80,7 @@ const SeatPicker = ({
                                         key={letter}
                                         label={letter}
                                         value={letter}
+                                        color={COLORS.black}
                                     />
                                 ))}
                             </Picker>
@@ -94,6 +95,7 @@ const SeatPicker = ({
                                         key={num}
                                         label={num}
                                         value={num}
+                                        color={COLORS.black}
                                     />
                                 ))}
                             </Picker>
